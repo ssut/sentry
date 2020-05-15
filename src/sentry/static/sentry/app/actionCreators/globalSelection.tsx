@@ -5,11 +5,7 @@ import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 import qs from 'query-string';
 
-import {
-  DATE_TIME,
-  LOCAL_STORAGE_KEY,
-  URL_PARAM,
-} from 'app/constants/globalSelectionHeader';
+import {LOCAL_STORAGE_KEY, URL_PARAM} from 'app/constants/globalSelectionHeader';
 import {
   Environment,
   GlobalSelection,
@@ -113,22 +109,26 @@ export function initializeUrlState({
   const orgSlug = organization.slug;
   const query = pick(queryParams, [URL_PARAM.PROJECT, URL_PARAM.ENVIRONMENT]);
   const hasProjectOrEnvironmentInUrl = Object.keys(query).length > 0;
-  const parsed = getStateFromQuery(queryParams, {allowAbsoluteDatetime: showAbsolute});
+  const parsed = getStateFromQuery(queryParams, {
+    allowAbsoluteDatetime: showAbsolute,
+    allowEmptyPeriod: true,
+  });
 
-  let globalSelection: Omit<GlobalSelection, 'datetime'> & {
-    datetime: {
-      [K in keyof GlobalSelection['datetime']]: GlobalSelection['datetime'][K] | null;
-    };
-  } = {
+  let globalSelection = {
     ...getDefaultSelection(),
-    datetime: {
-      [DATE_TIME.START as 'start']: parsed.start || null,
-      [DATE_TIME.END as 'end']: parsed.end || null,
-      [DATE_TIME.PERIOD as 'period']: parsed.period || null,
-      [DATE_TIME.UTC as 'utc']: parsed.utc || null,
-    },
     ...defaultSelection,
   };
+  if (parsed.period) {
+    globalSelection.datetime.period = parsed.period;
+  }
+  if (parsed.start && parsed.end) {
+    globalSelection.datetime.start = parsed.start;
+    globalSelection.datetime.end = parsed.end;
+    globalSelection.datetime.period = null;
+  }
+  if (parsed.utc) {
+    globalSelection.datetime.utc = parsed.utc;
+  }
 
   // We only save environment and project, so if those exist in
   // URL, do not touch local storage

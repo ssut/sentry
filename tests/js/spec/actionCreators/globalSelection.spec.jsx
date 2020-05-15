@@ -64,6 +64,60 @@ describe('GlobalSelection ActionCreators', function() {
       expect(localStorage.getItem).not.toHaveBeenCalled();
     });
 
+    it('uses query params statsPeriod over defaults', function() {
+      initializeUrlState({
+        organization,
+        queryParams: {
+          statsPeriod: '1h',
+          project: '1',
+        },
+        defaultSelection: {
+          datetime: {
+            period: '24h',
+          },
+        },
+        router,
+      });
+      expect(router.replace).toHaveBeenCalledWith(
+        expect.objectContaining({
+          query: {
+            cursor: undefined,
+            project: [1],
+            environment: [],
+            statsPeriod: '1h',
+          },
+        })
+      );
+    });
+
+    it('uses absolute dates over defaults', function() {
+      initializeUrlState({
+        organization,
+        queryParams: {
+          start: '2020-03-22T00:53:38',
+          end: '2020-04-21T00:53:38',
+          project: '1',
+        },
+        defaultSelection: {
+          datetime: {
+            period: '24h',
+          },
+        },
+        router,
+      });
+      expect(router.replace).toHaveBeenCalledWith(
+        expect.objectContaining({
+          query: {
+            cursor: undefined,
+            project: [1],
+            environment: [],
+            start: '2020-03-22T00:53:38',
+            end: '2020-04-21T00:53:38',
+          },
+        })
+      );
+    });
+
     it('does not load from local storage when there are query params', function() {
       initializeUrlState({
         organization,
