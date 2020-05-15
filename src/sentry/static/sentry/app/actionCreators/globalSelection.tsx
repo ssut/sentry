@@ -5,7 +5,11 @@ import omit from 'lodash/omit';
 import pick from 'lodash/pick';
 import qs from 'query-string';
 
-import {LOCAL_STORAGE_KEY, URL_PARAM} from 'app/constants/globalSelectionHeader';
+import {
+  DATE_TIME,
+  LOCAL_STORAGE_KEY,
+  URL_PARAM,
+} from 'app/constants/globalSelectionHeader';
 import {
   Environment,
   GlobalSelection,
@@ -113,21 +117,30 @@ export function initializeUrlState({
     allowAbsoluteDatetime: showAbsolute,
     allowEmptyPeriod: true,
   });
+  const {datetime: defaultDateTime, ...retrievedDefaultSelection} = getDefaultSelection();
+  const {datetime: customizedDefaultDateTime, ...customizedDefaultSelection} =
+    defaultSelection || {};
 
-  let globalSelection = {
-    ...getDefaultSelection(),
-    ...defaultSelection,
+  let globalSelection: Omit<GlobalSelection, 'datetime'> & {
+    datetime: {
+      [K in keyof GlobalSelection['datetime']]: GlobalSelection['datetime'][K] | null;
+    };
+  } = {
+    ...retrievedDefaultSelection,
+    ...customizedDefaultSelection,
+    datetime: {
+      [DATE_TIME.START as 'start']:
+        parsed.start || customizedDefaultDateTime?.start || defaultDateTime.start,
+      [DATE_TIME.END as 'end']:
+        parsed.end || customizedDefaultDateTime?.end || defaultDateTime.end,
+      [DATE_TIME.PERIOD as 'period']:
+        parsed.period || customizedDefaultDateTime?.period || defaultDateTime.period,
+      [DATE_TIME.UTC as 'utc']:
+        parsed.utc || customizedDefaultDateTime?.utc || defaultDateTime.utc,
+    },
   };
-  if (parsed.period) {
-    globalSelection.datetime.period = parsed.period;
-  }
-  if (parsed.start && parsed.end) {
-    globalSelection.datetime.start = parsed.start;
-    globalSelection.datetime.end = parsed.end;
+  if (globalSelection.datetime.start && globalSelection.datetime.end) {
     globalSelection.datetime.period = null;
-  }
-  if (parsed.utc) {
-    globalSelection.datetime.utc = parsed.utc;
   }
 
   // We only save environment and project, so if those exist in
