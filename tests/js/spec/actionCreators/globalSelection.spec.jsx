@@ -64,6 +64,51 @@ describe('GlobalSelection ActionCreators', function() {
       expect(localStorage.getItem).not.toHaveBeenCalled();
     });
 
+    it('does not change dates with no query params or defaultSelection', function() {
+      initializeUrlState({
+        organization,
+        queryParams: {
+          project: '1',
+        },
+        router,
+      });
+      expect(GlobalSelectionActions.initializeUrlState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          datetime: {
+            start: null,
+            end: null,
+            period: '14d',
+            utc: null,
+          },
+        })
+      );
+    });
+
+    it('does changes to default dates with defaultSelection and no query params', function() {
+      initializeUrlState({
+        organization,
+        queryParams: {
+          project: '1',
+        },
+        defaultSelection: {
+          datetime: {
+            period: '3h',
+          },
+        },
+        router,
+      });
+      expect(GlobalSelectionActions.initializeUrlState).toHaveBeenCalledWith(
+        expect.objectContaining({
+          datetime: {
+            start: null,
+            end: null,
+            period: '3h',
+            utc: null,
+          },
+        })
+      );
+    });
+
     it('uses query params statsPeriod over defaults', function() {
       initializeUrlState({
         organization,

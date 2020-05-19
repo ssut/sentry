@@ -130,13 +130,11 @@ export function initializeUrlState({
     ...customizedDefaultSelection,
     datetime: {
       [DATE_TIME.START as 'start']:
-        parsed.start || customizedDefaultDateTime?.start || defaultDateTime.start,
-      [DATE_TIME.END as 'end']:
-        parsed.end || customizedDefaultDateTime?.end || defaultDateTime.end,
+        parsed.start || customizedDefaultDateTime?.start || null,
+      [DATE_TIME.END as 'end']: parsed.end || customizedDefaultDateTime?.end || null,
       [DATE_TIME.PERIOD as 'period']:
         parsed.period || customizedDefaultDateTime?.period || defaultDateTime.period,
-      [DATE_TIME.UTC as 'utc']:
-        parsed.utc || customizedDefaultDateTime?.utc || defaultDateTime.utc,
+      [DATE_TIME.UTC as 'utc']: parsed.utc || customizedDefaultDateTime?.utc || null,
     },
   };
   if (globalSelection.datetime.start && globalSelection.datetime.end) {
